@@ -1,0 +1,974 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amsfonts,amssymb}
+\usepackage{graphicx}
+\usepackage{geometry}
+\geometry{a4paper, margin=2.5cm}
+\title{Modelagem Dinâmica de Robôs Móveis com Tração Diferencial: Abordagens de Lagrange e Newton-Euler}
+\author{}
+\date{}
+
+\begin{document}
+%---------------------------------------------
+% CAPA
+%---------------------------------------------
+\begin{titlepage}
+    \begin{figure}[h!]
+        \centering
+        \includegraphics[width=0.2\textwidth]{Figuras/UFCG_logo_png.png}
+    \end{figure}
+    \begin{center}
+        \large
+        \textbf{UNIVERSIDADE FEDERAL DE CAMPINA GRANDE}\\
+        Centro de Engenharia Elétrica e Informática\\
+        Unidade Acadêmica de Engenharia Elétrica\\
+        Departamento de Engenharia Elétrica\\[3cm]
+
+        \textbf{MODELAGEM DINÂMICA DE ROBÔS MÓVEIS COM TRAÇÃO DIFERENCIAL}\\[1cm]
+
+        \normalsize
+        Abordagens de Lagrange e Newton-Euler\\[2.5cm]
+
+        \textbf{Discente:} Matheus Lucas Tavares de Farias\\[0.5cm]
+        \textbf{Docente:} Antônio Marcus Nogueira Lima\\[3cm]
+        \vfill
+
+        \textbf{Campina Grande - PB}\\
+        \textbf{12 de Junho de 2025}
+    \end{center}
+\end{titlepage}
+
+%==========================================================================================
+\section{Introdução}
+
+A robótica móvel tem ganhado destaque nos últimos anos, especialmente no meio educacional. Enquanto a modelagem cinemática de robôs móveis com rodas (WMRs) é bem documentada e de fácil compreensão, a modelagem dinâmica ainda representa um desafio, por envolver sistemas não lineares e restrições não-holonômicas, o que dificulta seu aprendizado.
+
+No caso dos robôs com tração diferencial (DDMR), há uma carência de materiais didáticos que tratem a modelagem dinâmica de forma clara e sistemática. A literatura costuma ser fragmentada, com diferentes escolhas de variáveis, referenciais e hipóteses, o que compromete a comparabilidade entre os modelos.
+
+Os métodos mais comuns para modelagem dinâmica são os de Lagrange e Newton-Euler. O primeiro baseia-se na energia do sistema e requer o uso de multiplicadores para lidar com restrições. O segundo trata diretamente das forças envolvidas, exigindo maior detalhamento das interações físicas.
+
+Este trabalho propõe um modelo dinâmico estruturado para o DDMR, considerando explicitamente as restrições não-holonômicas. Primeiramente, utiliza-se o método de Lagrange com transformações que eliminam os multiplicadores. Em seguida, aplica-se o formalismo de Newton-Euler para rederivar o mesmo modelo. Por fim, demonstra-se a equivalência entre ambas as abordagens.
+
+O objetivo é oferecer uma base unificada e acessível sobre a modelagem dinâmica de DDMRs, contribuindo para o ensino e a pesquisa na área.
+
+
+%==========================================================================================
+\section{Sistemas de Coordenadas}
+
+Para descrever a posição e o movimento de um robô móvel com tração diferencial (DDMR) em seu ambiente, é necessário definir dois sistemas de coordenadas distintos: um sistema inercial e um sistema vinculado ao robô.
+
+O sistema de coordenadas inercial é um referencial global, fixo no ambiente ou plano onde o robô se movimenta. Ele é representado pelas coordenadas $\{X_I, Y_I\}$ e é utilizado como base para observar e medir o movimento do robô em relação ao mundo.
+
+Já o sistema de coordenadas do robô é um referencial local, que está preso ao corpo do robô e se move com ele. Este sistema é representado por $\{X_r, Y_r\}$, com origem no ponto médio entre as rodas (denominado ponto $A$), e sua orientação está alinhada com a direção frontal do robô.
+
+O centro de massa do robô, denotado por $C$, encontra-se sobre o eixo de simetria longitudinal do robô, a uma distância $d$ do ponto $A$.
+
+Como mostrado na Figura \ref{fig:Fig1}, a posição do robô no plano inercial pode ser expressa por um vetor de posição $q^I$ composto pelas coordenadas do ponto $A$ e pelo ângulo $\theta$, que representa a orientação do robô em relação ao eixo $x_I$:
+
+\begin{equation}
+    q^I =
+    \begin{bmatrix}
+    x_a \\
+    y_a \\
+    \theta
+    \end{bmatrix}
+\end{equation}
+
+\begin{figure}[]
+    \centering
+    \includegraphics[width=0.6\textwidth]{Figuras/Fig1.png}
+    \caption{Robô Móvel com Tração Diferencial(DDMR)}
+    \label{fig:Fig1}
+\end{figure}
+
+Dado os dois sistemas de coordenadas, um ponto qualquer no espaço pode ser expresso no sistema inercial como $X^r$ e no sistema do robô como $X^I$, dados por:
+
+\begin{equation}
+    X^I =
+    \begin{bmatrix}
+    x^I \\
+    y^I \\
+    \theta^I
+    \end{bmatrix}, \qquad
+    X^r =
+    \begin{bmatrix}
+    x^r \\
+    y^r \\
+    \theta^r
+    \end{bmatrix}
+\end{equation}
+
+
+A transformação entre os dois sistemas é feita por meio de uma matriz de rotação $R(\theta)$, definida por:
+
+\begin{equation}
+    R(\theta) =
+    \begin{bmatrix}
+    \cos\theta & -\sin\theta & 0 \\
+    \sin\theta & \cos\theta & 0 \\
+    0 & 0 & 1
+    \end{bmatrix}
+\end{equation}
+
+Essa matriz permite converter um vetor de posição do referencial do robô para o referencial inercial, por meio da seguinte relação:
+
+\begin{equation}
+    X_I = R(\theta) \, X_r
+    \label{eq:RelacaoPosicao}
+\end{equation}
+
+Analogamente, as velocidades nos dois referenciais também estão relacionadas por:
+
+\begin{equation}
+    \dot{X}_I = R(\theta) \ \dot{X}_r
+    \label{eq:RelacaoVelocidade}
+\end{equation}
+
+As equações (\ref{eq:RelacaoPosicao}) e (\ref{eq:RelacaoVelocidade}) são fundamentais para o desenvolvimento dos modelos cinemáticos e dinâmicos do DDMR, pois estabelecem a correspondência entre posições e velocidades nos referenciais inercial e do robô.
+
+%===================================================================================================
+\section{Restrições Cinemáticas do Robô com Tração Diferencial}
+
+O modelo cinemático de um robô diferencial (DDMR) impõe restrições não-holonômicas ao seu movimento, as quais limitam os graus de liberdade das velocidades, mas não podem ser integradas em restrições puramente posicionais. Nesta seção, duas restrições fundamentais são apresentadas:
+
+\subsection{Ausência de Deslizamento Lateral}
+
+Assume-se que o robô não se move lateralmente em relação ao seu próprio referencial (eixo $y_r$). Logo, a velocidade do ponto central entre as rodas ($A$) na direção lateral é nula:
+
+\begin{equation}
+\dot{y}_a^r = 0
+\end{equation}
+
+Utilizando a matriz de rotação $R(\theta)$ entre o referencial do robô e o referencial inercial, esta restrição é convertida para o sistema inercial:
+
+\begin{equation}
+    -\dot{x}_a \sin\theta + \dot{y}_a \cos\theta = 0
+    \label{eq:Restricao1}
+\end{equation}
+
+\subsection{Rolagem Pura das Rodas}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.6\textwidth]{Figuras/Fig2.png}
+    \caption{Restrição da rolagem Pura das Rodas}
+    \label{fig:Fig2}
+\end{figure}
+
+Assume-se também que cada roda mantém contato contínuo com o solo (sem escorregamento ou derrapagem) e que esse contato ocorre em apenas um ponto da roda, ponto $P$, como é possível ver na Figura (\ref{fig:Fig2}). Dessa forma, a velocidade linear do ponto de contato da roda direita ($v_{pR}$) e da roda esquerda($v_{pL}$) é proporcional às respectivas velocidades angulares:
+
+\begin{equation}
+    v_{pR} = R \dot{\varphi}_R, \qquad v_{pL} = R \dot{\varphi}_L
+    \label{eq:VelLinearRodas}
+\end{equation}
+
+As velocidades desses pontos em relação ao ponto $A$, no referencial inercial, podem ser obtidas pela equação \ref{eq:velocidade relativa em corpos rígidos} que descreve a velocidade relativa em corpos rígidos.
+
+\begin{equation}
+    \vec{v}_p = \vec{v}_A + \vec{\omega} \times \vec{r}_{Ap}
+    \label{eq:velocidade relativa em corpos rígidos}
+\end{equation}
+
+Na qual, $\vec{v}_p$ é a velocidade do ponto $P$ na roda, $\vec{v}_A$ é a velocidade do ponto $A$, $\vec{\omega}$ é a velocidade angular do robô e $\vec{r}_{Ap}$ é a posição do ponto $P$ na roda em relação ao ponto $A$ e é denotada por $\vec{r}_{ApR}$ para a roda direita e $\vec{r}_{ApL}$ para a roda esquerda.
+
+Esses vetores no sistema de coordenadas inerciais é dado por:
+
+\begin{equation}
+    \vec{v}_p = 
+    \begin{bmatrix}
+        \dot{x}_p\\ 
+        \dot{y}_p\\ 
+        0
+    \end{bmatrix} 
+    ,\,
+    \vec{v}_A = 
+\begin{bmatrix}
+    \dot{x}_a\\
+    \dot{y}_a\\
+    0
+\end{bmatrix}
+    ,\,
+    \vec{\omega} = 
+\begin{bmatrix}
+    0\\
+    0\\
+    \dot{\theta}
+\end{bmatrix}
+    ,\,
+    \vec{r}_{pAR} = 
+\begin{bmatrix}
+    L\sin\theta\\
+    -L\cos\theta\\
+    0
+\end{bmatrix}
+    ,\,
+    \vec{r}_{pAL} = 
+\begin{bmatrix}
+    -L\sin\theta\\
+    L\cos\theta\\
+    0
+\end{bmatrix}
+\end{equation}
+
+Dessa forma, a partir da equação (\ref{eq:velocidade relativa em corpos rígidos}), foi possível obter a seguinte relação para a roda direita:
+
+\begin{equation}
+\begin{cases}
+    \dot{x}_{pR} = \dot{x}_a + L \dot{\theta} \cos\theta \\
+    \dot{y}_{pR} = \dot{y}_a + L \dot{\theta} \sin\theta \\
+\end{cases}
+\label{eq:VelRodaDireita}
+\end{equation}
+
+De forma análoga, para a roda esquerda foi obtido a seguinte relação
+
+\begin{equation}
+\begin{cases}
+    \dot{x}_{pL} = \dot{x}_a - L \dot{\theta} \cos\theta \\
+    \dot{y}_{pL} = \dot{y}_a - L \dot{\theta} \sin\theta \\
+\end{cases}
+\label{eq:VelRodaEsquerda}
+\end{equation}
+
+Aplicando a matriz de rotação, são obtidas as seguintes relações:
+
+\begin{equation}
+\begin{cases}
+    \dot{x}_{pR}\cos\theta + \dot{y}_{pR}\sin\theta = R\dot{\varphi}_R\\
+    \dot{x}_{pL}\cos\theta + \dot{y}_{pL}\sin\theta = R\dot{\varphi}_L
+\end{cases}
+\label{eq:EquacaoRelacaoVelocidades}
+\end{equation}
+
+Substituindo as equações (\ref{eq:VelRodaDireita}) e (\ref{eq:VelRodaEsquerda}) na equação (\ref{eq:EquacaoRelacaoVelocidades}) e em seguida realizando algumas manipulações, é possível obter as equações: 
+
+\begin{align}
+    \dot{x}_a \cos\theta + \dot{y}_a \sin\theta + L \dot{\theta} - R \dot{\varphi}_R &= 0  \label{eq:Restricao2}
+    \\
+    \dot{x}_a \cos\theta + \dot{y}_a \sin\theta - L \dot{\theta} - R \dot{\varphi}_L &= 0
+    \label{eq:Restricao3}
+\end{align}
+
+\subsection{Forma Matricial das Restrições}
+
+As equações (\ref{eq:Restricao1}), (\ref{eq:Restricao2}) e (\ref{eq:Restricao3}) podem ser escritas na forma matricial:
+
+\begin{equation}
+\Lambda(q)\dot{q} = 0
+\end{equation}
+
+com a matriz de restrição sendo dada por:
+
+\begin{equation}
+    \Lambda(q) = 
+    \begin{bmatrix}
+    -\sin\theta & \cos\theta & 0 & 0 & 0 \\
+    \cos\theta & \sin\theta & L & -R & 0 \\
+    \cos\theta & \sin\theta & -L & 0 & -R
+    \end{bmatrix}
+\end{equation}
+
+e o vetor $\dot{q}$ dado por:
+
+\begin{equation}
+\dot{q} = 
+\begin{bmatrix}
+\dot{x}_a & \dot{y}_a & \dot{\theta} & \dot{\varphi}_R & \dot{\varphi}_L
+\end{bmatrix}^T
+\end{equation}
+
+Essa forma de representar as restrições será utilizada na modelagem cinemática e dinâmica do DDMR.
+%===================================================================================%
+
+\section{Modelo Cinemático do Robô com Tração Diferencial}
+
+O modelo cinemático descreve o movimento do robô sem considerar as forças envolvidas, relacionando diretamente as velocidades das rodas com a velocidade linear e angular do robô.
+
+As velocidades lineares das rodas são dadas pela equação (\ref{eq:VelLinearRodas}). A partir disso, a velocidade linear do robô no ponto $A$ é:
+
+\begin{equation}
+    v = \frac{v_R + v_L}{2} = R \frac{\dot{\varphi}_R + \dot{\varphi}_L}{2}
+    \label{eq:VelocidadeLinear}
+\end{equation}
+
+Além disso, a velocidade angular do robô é:
+
+\begin{equation}
+    \omega = \frac{v_R - v_L}{2L} = R \frac{\dot{\varphi}_R - \dot{\varphi}_L}{2L}
+    \label{eq:VelocidadeAngular}
+\end{equation}
+
+Com esse conjunto de equações, é possível determinar o vetor velocidade do ponto $A$, no referencial do robô, na forma matricial como sendo:
+
+\begin{equation}
+    \begin{bmatrix}
+        \dot{x}_a^r \\
+        \dot{y}_a^r \\
+        \dot{\theta}
+    \end{bmatrix}
+    =
+    \begin{bmatrix}
+        \frac{R}{2} & \frac{R}{2} \\
+        0 & 0 \\
+        \frac{R}{2L} & -\frac{R}{2L}
+    \end{bmatrix}
+    \begin{bmatrix}
+        \dot{\varphi}_R \\
+        \dot{\varphi}_L
+    \end{bmatrix}
+\end{equation}
+
+Utilizando a matriz de rotação, é possível determinar a equação matricial do vetor velocidade do ponto $A$ no referencial inercial como sendo:
+
+\begin{equation}
+\dot{q}^I =
+\begin{bmatrix}
+    \dot{x}_a \\
+    \dot{y}_a \\
+    \dot{\theta}
+\end{bmatrix}
+=
+\begin{bmatrix}
+    \frac{R}{2} \cos\theta & \frac{R}{2} \cos\theta \\
+    \frac{R}{2} \sin\theta & \frac{R}{2} \sin\theta \\
+    \frac{R}{2L} & -\frac{R}{2L}
+\end{bmatrix}
+\begin{bmatrix}
+    \dot{\varphi}_R \\
+    \dot{\varphi}_L
+\end{bmatrix}
+\label{eq:ModeloCinemáticoDireto}
+\end{equation}
+
+A equação (\ref{eq:ModeloCinemáticoDireto}) representa o modelo cinemático direto do DDMR. Além disso, esta pode ser escrita, alternativamente, relacionando as velocidades linear e angular do robô como:
+
+\begin{equation}
+    \dot{q}^I =
+    \begin{bmatrix}
+        \dot{x}_a \\
+        \dot{y}_a \\
+        \dot{\theta}
+    \end{bmatrix}
+    =
+    \begin{bmatrix}
+        \cos\theta & 0 \\
+        \sin\theta & 0 \\
+        0 & 1
+    \end{bmatrix}
+    \begin{bmatrix}
+        v \\
+        \omega
+    \end{bmatrix}
+\end{equation}
+
+Esse modelo é fundamental para a navegação e controle de robôs móveis, pois permite prever a posição e orientação futuras do robô a partir das velocidades das rodas.
+%===============================================================================================
+
+\section{Modelagem Dinâmica do DDMR}
+
+A dinâmica estuda o movimento de sistemas mecânicos levando em consideração as forças que afetam esse movimento, ao contrário da cinemática, que desconsidera essas forças. No contexto de robôs móveis com acionamento diferencial (\textit{Differential-Drive Mobile Robot} - DDMR), o modelo dinâmico é essencial para a análise de simulação e para o projeto de algoritmos de controle de movimento.
+
+Um DDMR não-holonômico, com $n$ coordenadas generalizadas $q = [q_1, q_2, \dots, q_n]^T$ e sujeito a $m$ restrições, pode ser descrito pelas seguintes equações de movimento:
+
+\begin{equation}
+    M(q)\ddot{q} + V(q,\dot{q})\dot{q} + F(\dot{q}) + G(q) + \tau_d = B(q)\tau - \Lambda^T(q)\lambda
+    \label{eq:dinamica_ddmr}
+\end{equation}
+
+Nesta equação, $M(q)$ é a matriz de inércia simétrica e definida positiva de dimensão $n \times n$; $V(q, \dot{q})\dot{q}$ representa os termos centrífugos e de Coriolis; $F(\dot{q})$ é a matriz de forças de atrito superficial; $G(q)$ é o vetor de forças gravitacionais; $\tau_d$ representa perturbações externas e dinâmicas não modeladas; $B(q)$ é a matriz de entrada do sistema; $\tau$ é o vetor de entradas de controle; e $\Lambda^T(q)\lambda$ representa as restrições cinemáticas, sendo $\Lambda(q)$ a matriz das restrições e $\lambda$ o vetor de multiplicadores de Lagrange. 
+
+Essa formulação unificada permite representar com precisão a dinâmica de robôs móveis diferenciais submetidos a restrições não-holonômicas e a perturbações externas, sendo fundamental para simulação e controle.
+%============================================================================================
+
+\subsection{Abordagem Dinâmica de Lagrange}
+
+A formulação dinâmica baseada no formalismo de Lagrange oferece um método sistemático e eficiente para a obtenção das equações de movimento de sistemas mecânicos com restrições não-holônomas, como é o caso do robô móvel de tração diferencial (DDMR). Utilizando a diferença entre as energias cinética e potencial do sistema, a equação de Lagrange com restrições é expressa como:
+
+\begin{equation}
+    \frac{d}{dt} \left( \frac{\partial L}{\partial \dot{q}_i} \right) - \frac{\partial L}{\partial q_i} = F - \Lambda^T(q)\lambda
+    \label{eq:EqDeLagrange}
+\end{equation}
+
+onde $L = T - V$ é a função Lagrangiana, na qual $T$ é a energia cinética do sistema e $V$ a energia potencial, $q_i$ são as coordenadas generalizadas, $F$ representa as forças generalizadas externas, $\Lambda$ é a matriz de restrições e $\lambda$ é o vetor de multiplicadores de Lagrange.
+
+Para o DDMR, assume-se que o movimento ocorre no plano horizontal, de forma que a energia potencial $V$ é nula. 
+
+As coordenadas generalizadas utilizadas para o DDMR é dada por
+
+\begin{equation}
+    q = \begin{bmatrix} x_a & y_a & \theta & \varphi_R & \varphi_L \end{bmatrix}^T,
+\end{equation}
+
+com $x_a$ e $y_a$ representando a posição do ponto médio entre as rodas, $\theta$ a orientação do robô, e $\varphi_R$, $\varphi_L$ os ângulos de rotação das rodas direita e esquerda, respectivamente.
+
+A energia cinética total $T$ do sistema é a soma da energia do corpo principal do robô e da energia das rodas e dos atuadores. 
+
+A energia cinética do corpo principal é dada por
+
+\begin{equation}
+    T_c = \frac{1}{2} m_c v_c^2 + \frac{1}{2} I_c \dot{\theta}^2,
+    \label{eq:ECineticaChassi}
+\end{equation}
+
+enquanto a energia cinética das rodas direita e esquerda, respectivamente, incluindo os motores, é
+
+\begin{align}
+    T_{wR} &= \frac{1}{2} m_w v_{wR}^2 + \frac{1}{2} I_w \dot{\theta}^2 + \frac{1}{2} I_m \dot{\phi}_R^2, 
+    \\
+    T_{wL} &= \frac{1}{2} m_w v_{wL}^2 + \frac{1}{2} I_w \dot{\theta}^2 + \frac{1}{2} I_m \dot{\phi}_L^2.
+    \label{eq:ECineticaRodaEsq}
+\end{align}
+
+Para a aplicação em questão, deve-se obter a equação da energia cinética total em função das coordenadas generalizadas. Para isso, é possível escrever a velocidade linear das equações seguindo essa especificação ao saber que
+
+\begin{equation}
+    v_i^2 = \dot{x}_i^2 + \dot{y}_i^2,
+\end{equation}
+
+e usar as seguintes relações
+
+\begin{equation}
+\begin{cases}
+    x_c = x_a + d \cos\theta \\
+    y_c = y_a + d \sin\theta
+\end{cases} \quad \to \quad
+\begin{cases}
+    \dot{x}_c = \dot{x}_a - d\dot{\theta} \sin\theta \\
+    \dot{y}_c = \dot{y}_a + d\dot{\theta} \cos\theta
+\end{cases},
+\label{eq:VelCentro}
+\end{equation}
+
+\begin{equation}
+\begin{cases}
+    x_{wR} = x_a + L \sin\theta \\
+    y_{wR} = y_a - L \cos\theta
+\end{cases} \quad \to \quad
+\begin{cases}
+    \dot{x}_{wR} = \dot{x}_a + L\dot{\theta} \cos\theta \\
+    \dot{y}_{wR} = \dot{y}_a + L\dot{\theta} \sin\theta
+\end{cases},
+\end{equation}
+
+\begin{equation}
+\begin{cases}
+    x_{wL} = x_a - L \sin\theta \\
+    y_{wL} = y_a + L \cos\theta
+\end{cases} \quad \to \quad
+\begin{cases}
+    \dot{x}_{wL} = \dot{x}_a - L\dot{\theta} \cos\theta \\
+    \dot{y}_{wL} = \dot{y}_a - L\dot{\theta} \sin\theta
+\end{cases}
+\label{eq:VelRodaEsq}
+\end{equation}
+
+Com isso, ao substituir as equações (\ref{eq:VelCentro}) - (\ref{eq:VelRodaEsq}) nas equações (\ref{eq:ECineticaChassi}) - (\ref{eq:ECineticaRodaEsq}), somando os termos da energia cinética e realizando algumas manipulações, a energia cinética total do sistema torna-se
+
+\begin{equation}
+    T = \frac{1}{2} m (\dot{x}_a^2 + \dot{y}_a^2) + m_c d \dot{\theta} (\dot{y}_a \cos\theta -\dot{x}_a \sin\theta) + \frac{1}{2} I \dot{\theta}^2 + \frac{1}{2} I_w (\dot{\varphi}_R^2 + \dot{\varphi}_L^2),
+    \label{eq:EnergiaCineticaTotal}
+\end{equation}
+
+onde $m = m_c + 2m_w$ e $I = I_c + 2I_m + 2m_wL^2+m_cd^2$ representam a massa total e a inércia equivalente, respectivamente.
+
+Sabendo que a energia potencial do sistema é nula, a lagrangiana é dada por $L = T$. Substituindo a equação (\ref{eq:EnergiaCineticaTotal}) na equação (\ref{eq:EqDeLagrange}) obtêm-se os seguintes resultados:
+
+\begin{equation}
+    m\ddot{x}_a - m_cd\ddot{\theta}\sin\theta - m_cd\dot{\theta}^2\cos\theta = C_1
+    \label{eq:EqDoMovimento1}
+\end{equation}
+\begin{equation}
+    m\ddot{y}_a + m_cd\ddot{\theta}\cos\theta - m_cd\dot{\theta}^2\sin\theta = C_2
+\end{equation}
+\begin{equation}
+    - m_cd\ddot{x}_a\sin\theta + m_cd\ddot{y}_a\cos\theta + I\ddot{\theta} = C_3
+\end{equation}
+\begin{equation}
+    I_w\ddot{\varphi}_R = \tau_R + C_4
+\end{equation}
+\begin{equation}
+    I_w\ddot{\varphi}_L = \tau_L + C_5
+    \label{eq:EqDoMovimento5}
+\end{equation}
+
+Os termos ( $C_1$, $C_2$, $C_3$, $C_4$, $C_5$ ) representam contribuições associadas às restrições cinemáticas do sistema. Esses coeficientes podem ser expressos em termos dos multiplicadores de Lagrange \( \boldsymbol{\lambda} \) e da matriz de restrições cinemáticas \( \boldsymbol{\Lambda}(q) \), definida na Seção 3, conforme:
+
+\begin{equation}
+    \boldsymbol{\Lambda}^T(q) =
+    \begin{bmatrix}
+        C_1 \\
+        C_2 \\
+        C_3 \\
+        C_4 \\
+        C_5
+    \end{bmatrix}
+\end{equation}
+
+Dessa forma, as equações do movimento (\ref{eq:EqDoMovimento1}) - (\ref{eq:EqDoMovimento5}) podem ser representadas de forma geral dada pela equação (\ref{eq:dinamica_ddmr}) como sendo
+
+\begin{equation}
+    M(q)\ddot{q} + V(\dot{q}, q)\dot{q} = B(q)\tau - \Lambda^T(q)\lambda,
+    \label{eq:eq:dinamica_ddmrLagrange}
+\end{equation}
+
+na qual
+
+\[
+M(q) = 
+\begin{bmatrix}
+m & 0 & -m_cd \sin\theta & 0 & 0 \\
+0 & m & m_cd \cos\theta & 0 & 0 \\
+-m_cd \sin\theta & m_cd \cos\theta & I & 0 & 0 \\
+0 & 0 & 0 & I_w & 0 \\
+0 & 0 & 0 & 0 & I_w \\
+\end{bmatrix},
+\]
+
+\[
+V(q,\dot{q}) = 
+\begin{bmatrix}
+0 & 0 & -m_cd\dot{\theta} \cos\theta & 0 & 0 \\
+0 & 0 & -m_cd\dot{\theta} \sin\theta & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 \\
+\end{bmatrix}
+\]
+
+\[
+B(q) = 
+\begin{bmatrix}
+0 & 0 \\
+0 & 0 \\
+0 & 0 \\
+1 & 0 \\
+0 & 1 \\
+\end{bmatrix}, \quad
+\Lambda^T(q) \lambda = 
+\begin{bmatrix}
+-\sin\theta & \cos\theta & \cos\theta & \\
+\cos\theta & \sin\theta & \sin\theta & \\
+0 & L & -L & \\
+0 & -R & 0 & \\
+0 & 0 & -R & \\
+\end{bmatrix}
+\times
+\begin{bmatrix}
+\lambda_1 \\
+\lambda_2 \\
+\lambda_3 \\
+\lambda_4 \\
+\lambda_5 \\
+\end{bmatrix}
+\]
+
+ Em seguida, o sistema descrito pela equação (\ref{eq:eq:dinamica_ddmrLagrange}) é transformado para uma forma alternativa, que é mais adequada para fins de controle e simulação. O objetivo principal é eliminar o termo de restrição $\Lambda^T(q)\lambda$ na equação (\ref{eq:eq:dinamica_ddmrLagrange}), já que os multiplicadores de Lagrange $\lambda_i$ são desconhecidos. 
+
+Para isso, define-se primeiro o vetor reduzido:
+
+\begin{equation}
+    \eta = 
+    \begin{bmatrix}
+    \dot{\phi}_R \\
+    \dot{\phi}_L
+    \end{bmatrix}
+\end{equation}
+
+Em seguida, ao expressar as velocidades das coordenadas generalizadas usando o modelo cinemático direto, descrito na equação (\ref{eq:ModeloCinemáticoDireto}), tem-se:
+
+\begin{equation}
+    \begin{bmatrix}
+    \dot{x}_a \\
+    \dot{y}_a \\
+    \dot{\theta} \\
+    \dot{\phi}_R \\
+    \dot{\phi}_L
+    \end{bmatrix}
+    =
+    \frac{1}{2}
+    \begin{bmatrix}
+    R \cos\theta & R \cos\theta \\
+    R \sin\theta & R \sin\theta \\
+    \frac{R}{L} & -\frac{R}{L} \\
+    2 & 0 \\
+    0 & 2 \\
+    \end{bmatrix}
+    \begin{bmatrix}
+    \dot{\phi}_R \\
+    \dot{\phi}_L
+    \end{bmatrix}
+\end{equation}
+
+Isso pode ser escrito na forma compacta:
+
+\begin{equation}
+    \dot{q} = S(q) \eta
+    \label{eq:ModeloCinemáticoDiretoCompacta}
+\end{equation}
+
+Pode-se verificar que a matriz de transformação $S(q)$ pertence ao espaço nulo da matriz de restrição $\Lambda(q)$. Portanto, temos:
+
+\begin{equation}
+S^T(q)\Lambda^T(q) = 0
+\end{equation}
+
+Derivando a equação (\ref{eq:ModeloCinemáticoDiretoCompacta}) em relação ao tempo, obtemos:
+
+\begin{equation}
+    \ddot{q} = \dot{S}(q)\eta + S(q)\dot{\eta}
+    \label{eq:ModeloCinemáticoDiretoCompactaDiff}
+\end{equation}
+
+Substituindo as equações (\ref{eq:ModeloCinemáticoDiretoCompacta}) e (\ref{eq:ModeloCinemáticoDiretoCompactaDiff}) na equação principal (\ref{eq:eq:dinamica_ddmrLagrange}), obtemos:
+
+\begin{equation}
+    M(q)\left[\dot{S}(q)\eta + S(q)\dot{\eta}\right] + V(q,\dot{q})\left[S(q)\eta\right] = B(q)\tau - \Lambda^T(q)\lambda
+\end{equation}
+
+Expandindo a equação, agrupando os termos e multiplicando previamente por $S(q)^T$ obtém-se:
+\begin{equation}
+    S^T(q)M(q)S(q)\dot{\eta} + S^T(q)\left[M(q)\dot{S}(q) + V(\dot{q}, q)S(q)\right]\eta = S^T(q)B(q)\tau - S^T(q)\Lambda^T(a)\lambda
+\end{equation}
+
+Dessa forma, o último terno é nulo. Com isso, e definindo as novas matrizes:
+
+\[\overline{M}(q) = S^T(q)M(q)S(q),\]
+
+\[\overline{V}(\dot{q}, q) = S^T(q)\left[M(q)\dot{S}(q) + V(\dot{q}, q)S(q)\right],\]
+
+\[\overline{B}(q) = S^T(q)B(q)\]
+
+a equação da dinâmica do DDMR é reduzida a:
+
+\begin{equation}
+    \overline{M}(q)\dot{\eta} + \overline{V}(\dot{q}, q)\eta = \overline{B}(q)\tau
+    \label{eq:ModeloDinamicoLagrangeReduzido}
+\end{equation}
+
+com
+
+\[
+\overline{M}(q) =
+\begin{bmatrix}
+I_w + \dfrac{R^2}{4L^2} \left( mL^2 + I \right) & \dfrac{R^2}{4L^2} \left( mL^2 - I \right) \\
+\dfrac{R^2}{4L^2} \left( mL^2 - I \right) & I_w + \dfrac{R^2}{4L^2} \left( mL^2 + I \right)
+\end{bmatrix}
+\]
+
+\[
+\overline{V}(q, \dot{q}) =
+\begin{bmatrix}
+0 & \dfrac{R^2}{2L} m_c d \dot{\theta} \\
+-\dfrac{R^2}{2L} m_c d \dot{\theta} & 0
+\end{bmatrix}
+\qquad
+\overline{B}(q) =
+\begin{bmatrix}
+1 & 0 \\
+0 & 1
+\end{bmatrix}
+\]
+
+O modelo dinâmico apresentado na equação (\ref{eq:ModeloDinamicoLagrangeReduzido}) pode ser reescrito em termos das velocidades linear($v$) e angular ($\omega$) do robô diferencial. Essa reformulação é possível ao utilizar as equações do modelo cinemático (\ref{eq:VelocidadeLinear}) e (\ref{eq:VelocidadeAngular}), permitindo expressar a dinâmica do sistema de forma mais compacta. O sistema resultante é dado por:
+
+\begin{equation}
+\left\{
+\begin{aligned}
+\left( m + \frac{2I_w}{R^2} \right) \dot{v} - m_c d \omega^2 &= \frac{1}{R}(\tau_R + \tau_L) \\
+\left( I + \frac{2L^2}{R^2} I_w \right) \dot{\omega} + m_c d \omega v &= \frac{L}{R}(\tau_R - \tau_L)
+\end{aligned}
+\right.
+\label{eq:compact_dynamics}
+\end{equation}
+
+Esse modelo descreve a evolução das velocidades do robô em função dos torques aplicados pelos motores das rodas direita (\( \tau_R \)) e esquerda (\( \tau_L \)).
+%====================================================================================
+
+\subsection{Abordagem de Newton-Euler}
+
+A primeira etapa essencial na modelagem dinâmica via abordagem de Newton-Euler é a construção do diagrama de corpo livre do robô, com o objetivo de identificar e analisar todas as forças que atuam sobre o sistema. O diagrama de corpo livre do sistema pode ser visto na Figura (\ref{fig:Fig3}).
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.6\textwidth]{Figuras/Fig3.png}
+    \caption{Diagrama de corpo livre do robô para modelagem dinâmica Newtoniana}
+    \label{fig:Fig3}
+\end{figure}
+
+Considerando o robô móvel diferencial e adotando o referencial local \(\{x_r, y_r\}\), introduzem-se as seguintes variáveis relevantes para a descrição do sistema: a velocidade do centro de massa \(C\) do robô, expressa por \((v_u, v_w)\), onde \(v_u\) é a componente longitudinal e \(v_w\) é a componente lateral; a aceleração do centro de massa, indicada por \((a_u, a_w)\); as forças longitudinais aplicadas pelas rodas direita e esquerda, representadas por \(F_{u_R}\) e \(F_{u_L}\), respectivamente; e as forças laterais correspondentes, \(F_{w_R}\) e \(F_{w_L}\). A orientação do robô no plano é dada pelo ângulo \(\theta\), enquanto \(\omega\) representa sua velocidade angular. A massa total do robô é denotada por \(m\), e \(I\) corresponde ao momento de inércia em relação ao centro de massa. 
+
+Com base no diagrama de corpo livre apresentado, observa-se que as únicas forças externas que atuam sobre o robô são aquelas geradas pelos atuadores localizados nas rodas, o que simplifica a análise dinâmica ao concentrar a origem das forças no sistema de propulsão.
+
+Iniciamos a derivação representando a posição do robô utilizando coordenadas polares. Supondo que o robô seja um corpo rígido, suas coordenadas polares no referencial inercial podem ser expressas por meio de um vetor complexo:
+
+\begin{equation}
+    \hat{r} = re^{j\theta}
+\end{equation}
+
+Derivando esse vetor posição em relação ao tempo, obtemos a velocidade e a aceleração do robô no referencial inercial:
+
+\begin{equation}
+    \dot{\hat{r}} = \dot{r}e^{j\theta} + jr\dot{\theta}e^{j\theta}
+\end{equation}
+
+\begin{equation}
+    \ddot{\hat{r}} = \ddot{r}e^{j\theta} + 2j\dot{r}\dot{\theta}e^{j\theta} + jr\ddot{\theta}e^{j\theta} - r\dot{\theta}^2e^{j\theta}
+\end{equation}
+
+Simplificando e escrevendo os termos de velocidade e aceleração nas componentes radial e tangencial, temos:
+
+\begin{equation}
+    \dot{\hat{r}} = [\dot{r}]e^{j\theta} + [r\dot{\theta}]e^{j(\theta + \frac{\pi}{2})}
+\end{equation}
+
+\begin{equation}
+    \ddot{\hat{r}} = [\ddot{r} - r\dot{\theta}^2]e^{j\theta} + [2\dot{r}\dot{\theta} + r\ddot{\theta}]e^{j(\theta + \frac{\pi}{2})}
+\end{equation}
+
+As componentes de velocidade e aceleração nas direções radial e tangencial são definidas como:
+
+\begin{equation}
+    v_u = \dot{r}
+\end{equation}
+\begin{equation}
+    v_w = r\dot{\theta}
+\end{equation}
+\begin{equation}
+    a_u = \ddot{r} - r\dot{\theta}^2
+\end{equation}
+\begin{equation}
+    a_w = 2\dot{r}\dot{\theta} + r\ddot{\theta}
+\end{equation}
+
+A partir das quatro equações acima, podemos escrever as seguintes relações entre as componentes radial e tangencial da velocidade e aceleração do robô:
+
+\begin{equation}
+    a_u = \dot{v}_u - v_w\dot{\theta}
+    \label{eq:AcelRadial}
+\end{equation}
+\begin{equation}
+    a_w = \dot{v}_w + v_u\dot{\theta}
+    \label{eq:AcelTangencial}
+\end{equation}
+
+As equações acima (\ref{eq:AcelRadial}) e (\ref{eq:AcelTangencial}) são as equações fundamentais da aceleração, que também podem ser obtidas por meio do teorema do movimento de um corpo rígido em um referencial rotativo.
+
+O próximo passo é escrever a segunda lei de Newton no referencial do robô e encontrar a relação entre as forças, torques e acelerações. O modelo DDMR apresenta dois tipos de movimento: translações nas direções radial e tangencial, e rotação em torno do eixo vertical passando pelo centro de massa. Seja $M$ a massa total do robô, incluindo as rodas e os atuadores, e seja $J$ o momento de inércia em relação ao centro de massa. Assim, as equações dinâmicas são dadas por:
+
+\begin{equation}
+    Ma_u = F_{uL} + F_{uR}
+\end{equation}
+
+\begin{equation}
+    Ma_w = F_{wL} - F_{wR}
+\end{equation}
+
+\begin{equation}
+    J\ddot{\theta} = (F_{wR} - F_{wL})L + (F_{uR} - F_{uL})d
+\end{equation}
+
+Substituindo as expressões de aceleração das equações (\ref{eq:AcelRadial}) e (\ref{eq:AcelTangencial}), tem-se:
+
+\begin{equation}
+    \dot{v}_u = \dot{v}_w\dot\theta + \frac{F_{uL} + F_{uR}}{M}
+    \label{eq:Vu_dotGeral}
+\end{equation}
+
+\begin{equation}
+    \dot{v}_w = -v_u\dot{\theta} + \frac{F_{wL} - F_{wR}}{M}
+    \label{eq:Vw_dotGeral}
+\end{equation}
+
+\begin{equation}
+    \ddot{\theta} = \frac{L}{J}(F_{wR} - F_{wL}) + \frac{d}{J}(F_{uR} - F_{uL})
+    \label{eq:theta_dotdotGeral}
+\end{equation}
+
+A ausência de deslizamento (rolamento puro) na direção longitudinal e a ausência de escorregamento na direção lateral criam uma independência entre as velocidades longitudinal, lateral e angular, o que simplifica as equações dinâmicas. Essas restrições não-holônomas são incorporadas ao definir-se a velocidade do ponto central $A$ no referencial local e forçá-la a ser zero. Utilizando a matriz de transformação ${R}(\theta)$, inicialmente determinamos a velocidade do centro de massa $C$ no referencial inercial como:
+
+\begin{equation}
+    \begin{bmatrix}
+        \dot{x}_c \\
+        \dot{y}_c
+    \end{bmatrix}
+    =
+    \begin{bmatrix}
+        \cos\theta & -\sin\theta \\
+        \sin\theta & \cos\theta
+    \end{bmatrix}
+    \begin{bmatrix}
+        v_u \\
+        v_w
+    \end{bmatrix}
+\end{equation}
+
+A seguir, utilizando a equação (\ref{eq:VelCentro}), podemos encontrar a velocidade do ponto central $A$ no referencial inercial. Dessa forma, pode-se então demonstrar que a velocidade lateral do ponto $A$, no referencial local, é $v_w - d\dot{\theta}$. Portanto, na ausência de escorregamento lateral, $y_a^r = 0$, tem-se:
+
+\begin{equation}
+    v_w = d\dot{\theta}
+    \label{eq:VelLongRestricao}
+\end{equation}
+
+Substituindo a equação (\ref{eq:VelLongRestricao}) em (\ref{eq:Vu_dotGeral}) e (\ref{eq:Vw_dotGeral}), e combinando com a equação (\ref{eq:theta_dotdotGeral}), obtemos:
+
+\begin{equation}
+    \dot{v}_u = d\dot{\theta}^2 + \frac{1}{M}(F_{uL} + F_{uR})
+\end{equation}
+
+\begin{equation}
+    \ddot{\theta} = \frac{L}{Md^2 + J}(F_{uR} - F_{uL}) - \frac{Mdv_u}{Md^2 + J} \dot{\theta}
+\end{equation}
+
+As duas equações acima representam as equações dinâmicas do robô considerando as restrições não-holônomas. Essas equações podem ser transformadas para expressar os torques dos atuadores aplicados às rodas, de forma semelhante à notação usada na abordagem Lagrangiana:
+
+\begin{equation}
+    M\dot{v}_u - Md\dot{\theta}^2 = \frac{1}{R}(\tau_R + \tau_L)
+\end{equation}
+
+\begin{equation}
+    (Md^2 + J)\ddot{\theta} + Md\dot{\theta}v_u = \frac{L}{R}(\tau_R - \tau_L)
+\end{equation}
+
+As duas equações acima podem ser escritas na forma matricial da seguinte maneira:
+
+\begin{equation}
+\begin{bmatrix}
+    M & 0 \\
+    0 & Md^2 + J
+\end{bmatrix}
+\begin{bmatrix}
+    \dot{v}_u \\
+    \ddot{\theta}
+\end{bmatrix}
++
+\begin{bmatrix}
+    0 & -Md\dot{\theta} \\
+    Md\dot{\theta} & 0
+\end{bmatrix}
+\begin{bmatrix}
+    v_u \\
+    \dot{\theta}
+\end{bmatrix}
+=
+\frac{1}{R}
+\begin{bmatrix}
+    1 & 1 \\
+    L & -L
+\end{bmatrix}
+\begin{bmatrix}
+    \tau_R \\
+    \tau_L
+\end{bmatrix}
+\label{eq:EqMatrizNE}
+\end{equation}
+
+Como pode ser observado, a equação (\ref{eq:Vu_dotGeral}) é similar à equação (\ref{eq:compact_dynamics}), que foi obtida usando a abordagem Lagrangiana. Note que, na abordagem de Newton-Euler, as massas e inércias das rodas não são consideradas; o robô é tratado como um corpo rígido único. Assim, ambas as formulações são equivalentes se os parâmetros de inércia e massa forem definidos como:
+
+\begin{equation}
+    M = m_c
+\end{equation}
+
+\begin{equation}
+    J = I_c
+\end{equation}
+
+Agora, utilizando as equações de cinemática direta (\ref{eq:VelocidadeLinear}) e (\ref{eq:VelocidadeAngular}), é possível reescrever facilmente as equações dinâmicas gerais (\ref{eq:EqMatrizNE}) em termos das velocidades angulares das rodas e dos torques dos atuadores. Isso leva à seguinte formulação:
+
+\begin{equation}
+\left[
+    \frac{R(Md^2 + J)}{4L^2} + \frac{MR}{4}
+\right] \ddot{\varphi}_R
++
+\left[
+    -\frac{R(Md^2 + J)}{4L^2} + \frac{MR}{4}
+\right] \ddot{\varphi}_L
+-
+\left[
+    \frac{MdR^2}{4L^2}
+\right] \dot{\varphi}_L^2
++
+    \left[
+        \frac{MdR^2}{4L^2}
+    \right] \dot{\varphi}_R \dot{\varphi}_L
+=
+\frac{1}{R} \tau_R
+\end{equation}
+
+\begin{equation}
+\left[
+    \frac{R(Md^2 + J)}{4L^2} + \frac{MR}{4}
+\right] \ddot{\varphi}_L
++
+\left[
+    -\frac{R(Md^2 + J)}{4L^2} + \frac{MR}{4}
+\right] \ddot{\varphi}_R
+-
+\left[
+    \frac{MdR^2}{4L^2} \right]\dot{\varphi}_R^2
+    +
+    \left[
+        \frac{MdR^2}{4L^2}
+    \right] \dot{\varphi}_R \dot{\varphi}_L
+=
+\frac{1}{R} \tau_L
+\end{equation}
+
+As equações acima também são equivalentes às obtidas pela abordagem Lagrangiana, conforme mostrado na equação (\ref{eq:ModeloDinamicoLagrangeReduzido}).
+
+A Figura  \ref{fig:Fig4} apresenta o modelo dinâmico do DDMR, representando as equações de movimento (\ref{eq:EqMatrizNE}). Esse modelo evidencia claramente o acoplamento entre os torques dos motores, as velocidades linear e angular do robô, e as velocidades das rodas. Este modelo pode ser utilizado de forma adequada para simulação e análise do DDMR.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Figuras/Fig4.png}
+    \caption{Modelo dinâmico do DDMR}
+    \label{fig:Fig4}
+\end{figure}
+%=======================================================================================
+
+\section{Modelagem dos Atuadores}
+
+Os motores DC geralmente utilizados para acionar as rodas de um robô móvel com acionamento diferencial são considerados como atuadores do tipo servo. No nosso sistema DDMR, o motor DC é controlado pelo circuito de armadura, utilizando a tensão da armadura $v_a$ como sinal de controle, mantendo constantes as condições no circuito de campo. 
+
+Para um motor DC de ímã permanente, temos as seguintes equações para o circuito da armadura:
+
+\begin{equation}
+\begin{cases}
+    v_a &= R_a i_a + L_a \frac{di_a}{dt} + e_a \\
+    e_a &= K_b \omega_m \\
+    \tau_m &= K_t i_a \\
+    \tau &= N \tau_m
+\end{cases}
+\label{eq:ModeloMotores}
+\end{equation}
+
+onde $i_a$ é a corrente da armadura, $(R_a, L_a)$ são respectivamente a resistência e a indutância do enrolamento da armadura, $e_a$ é a força contra-eletromotriz (back emf), $\omega_m$ é a velocidade angular do rotor, $\tau_m$ é o torque gerado pelo motor, $(K_t, K_b)$ são as constantes de torque e de back emf, $N$ é a razão de engrenagem, e $\tau$ é o torque aplicado à roda.
+
+Como nos DDMRs os motores estão mecanicamente acoplados às rodas por meio de engrenagens, as equações de movimento dos motores estão diretamente ligadas à dinâmica do robô. Assim, cada motor DC satisfaz:
+
+\begin{equation}
+\begin{cases}
+    \omega_{mR} &= N \dot{\varphi}_R \\
+    \omega_{mL} &= N \dot{\varphi}_L
+\end{cases}
+\end{equation}
+
+A combinação da equação (\ref{eq:ModeloMotores}) de cada motor com a dinâmica mecânica do robô móvel com tração diferencial (DDMR) permite obter as equações completas do sistema. Distúrbios adicionais de torque atuando nas rodas podem ser considerados como termos adicionais aos torques dos motores. A Figura \ref{fig:Fig5} apresenta um diagrama em blocos que representa o sistema completo. O modelo cinemático direto (equação \ref{eq:ModeloCinemáticoDireto}) pode ser acoplado em cascata ao modelo dinâmico, formando assim um modelo completo para simulação e análise do DDMR.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.7\textwidth]{Figuras/Fig5.png}
+    \caption{Modelo dinâmico do DDMR com atuadores}
+    \label{fig:Fig5}
+\end{figure}
+
+%====================================================================================
+\section{Conclusão}
+
+Neste trabalho, foi apresentada uma dedução detalhada do modelo dinâmico de um robô móvel com tração diferencial, utilizando os métodos de Lagrange e Newton-Euler. Verificou-se que ambos os métodos são matematicamente equivalentes, assegurando a consistência dos resultados. As equações de movimento dos motores de corrente contínua também foram incluídas para compor o modelo dinâmico completo do DDMR. O conhecimento adquirido neste estudo pode auxiliar estudantes de engenharia e pesquisadores na modelagem e no desenvolvimento de controladores adequados para a navegação e o rastreamento de trajetórias de robôs móveis com tração diferencial.
+
+
+%====================================================================================
+\section{Referência}
+
+DHAOUADI, Rached; HATAB, Ahmad Abu. Dynamic modelling of differential-drive mobile robots using Lagrange and Newton-Euler methodologies: a unified framework. Advances in Robotics \& Automation, [S.l.], v. 2, n. 2, p. 1–7, 2013.
+\end{document}
