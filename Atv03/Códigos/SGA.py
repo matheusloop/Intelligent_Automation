@@ -7,7 +7,7 @@ from numpy.random import rand, randn
 
 def evolve(fitnessFunction, length, popSize, maxGens, probMutation,
            probCrossover=1, sigmaScaling=True, sigmaScalingCoeff=1,
-           SUS=True):
+           SUS=True, verbose=False):
     """
     Executa um algoritmo genético simples com operadores de seleção, crossover e mutação.
     Retorna o melhor indivíduo encontrado durante a evolução.
@@ -38,7 +38,8 @@ def evolve(fitnessFunction, length, popSize, maxGens, probMutation,
         maxFitnessHist[gen] = fitnessVals.max()
         avgFitnessHist[gen] = fitnessVals.mean()
 
-        print(f"gen = {gen:03d}   avgFitness = {avgFitnessHist[gen]:.3f}  maxFitness = {maxFitnessHist[gen]:.3f}")
+        if verbose:
+            print(f"gen = {gen:03d}   avgFitness = {avgFitnessHist[gen]:.3f}  maxFitness = {maxFitnessHist[gen]:.3f}")
 
         # Verifica se é o melhor indivíduo até agora
         currentBestIdx = np.argmax(fitnessVals)
