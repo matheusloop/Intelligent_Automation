@@ -5,38 +5,52 @@ from skfuzzy import control as ctrl
 ''' FUZIFICAÇÃO '''
 # Função que retorna os vetores de pertinência
 def sensorFuzzification(sensorLabel):
-    fuzzyLabel = ctrl.Antecedent(np.arange(0, 1.003, 0.003), sensorLabel)
+    fuzzyLabel = ctrl.Antecedent(np.arange(0, 1.03, 0.03), sensorLabel)
 
-    fuzzyLabel['N'] = np.where(fuzzyLabel.universe <= 0.25, 1, fuzz.gaussmf(fuzzyLabel.universe, 0.25, 0.08))
-    fuzzyLabel['M'] = fuzz.gaussmf(fuzzyLabel.universe, 0.5, 0.08)
-    fuzzyLabel['F'] = np.where(fuzzyLabel.universe >= 0.75, 1, fuzz.gaussmf(fuzzyLabel.universe, 0.75, 0.08))
+    fuzzyLabel['N'] = np.where(fuzzyLabel.universe <= 0.35, 1, fuzz.trimf(fuzzyLabel.universe, [0.35, 0.35, 0.55]))
+    fuzzyLabel['M'] = fuzz.trimf(fuzzyLabel.universe, [0.35, 0.55, 0.75])
+    fuzzyLabel['F'] = np.where(fuzzyLabel.universe >= 0.75, 1, fuzz.trimf(fuzzyLabel.universe, [0.55, 0.75, 0.75]))
 
     return fuzzyLabel
 
 
 def orientationFuzzification(orientationLabel):
-    fuzzyLabel = ctrl.Antecedent(np.arange(-np.pi, np.pi+0.01, 0.01), orientationLabel)
+    fuzzyLabel = ctrl.Antecedent(np.arange(-np.pi, np.pi+0.1, 0.1), orientationLabel)
 
-    for i, label in enumerate(['SOn', 'SE', 'ES', 'NE', 'NO', 'NW', 'WE', 'SW', 'SOp']):
-        fuzzyLabel[label] = fuzz.gaussmf(fuzzyLabel.universe, -np.pi + i*np.pi/4, 0.33)
+    fuzzyLabel['SOn'] = fuzz.trimf(fuzzyLabel.universe, [-np.pi+0*np.pi/4, -np.pi+0*np.pi/4, -np.pi+1*np.pi/4])
+    fuzzyLabel['SE']  = fuzz.trimf(fuzzyLabel.universe, [-np.pi+0*np.pi/4, -np.pi+1*np.pi/4, -np.pi+2*np.pi/4])
+    fuzzyLabel['ES']  = fuzz.trimf(fuzzyLabel.universe, [-np.pi+1*np.pi/4, -np.pi+2*np.pi/4, -np.pi+3*np.pi/4])
+    fuzzyLabel['NE']  = fuzz.trimf(fuzzyLabel.universe, [-np.pi+2*np.pi/4, -np.pi+3*np.pi/4, -np.pi+4*np.pi/4])
+    fuzzyLabel['NO']  = fuzz.trimf(fuzzyLabel.universe, [-np.pi+3*np.pi/4, -np.pi+4*np.pi/4, -np.pi+5*np.pi/4])
+    fuzzyLabel['NW']  = fuzz.trimf(fuzzyLabel.universe, [-np.pi+4*np.pi/4, -np.pi+5*np.pi/4, -np.pi+6*np.pi/4])
+    fuzzyLabel['WE']  = fuzz.trimf(fuzzyLabel.universe, [-np.pi+5*np.pi/4, -np.pi+6*np.pi/4, -np.pi+7*np.pi/4])
+    fuzzyLabel['SW']  = fuzz.trimf(fuzzyLabel.universe, [-np.pi+6*np.pi/4, -np.pi+7*np.pi/4, -np.pi+8*np.pi/4])
+    fuzzyLabel['SOp'] = fuzz.trimf(fuzzyLabel.universe, [-np.pi+7*np.pi/4, -np.pi+8*np.pi/4, -np.pi+8*np.pi/4])
 
     return fuzzyLabel
 
 ''' DESFUZIFICAÇÃO '''
 def positionDesfuzzification(positionLabel):
-    fuzzyLabel = ctrl.Consequent(np.arange(0, 4.01, 0.01), positionLabel)
+    fuzzyLabel = ctrl.Consequent(np.arange(0, 4.1, 0.1), positionLabel)
 
     sigma = 0.85
-    fuzzyLabel['N'] = fuzz.gaussmf(fuzzyLabel.universe, 0, sigma)
-    fuzzyLabel['M'] = fuzz.gaussmf(fuzzyLabel.universe, 2, sigma)
-    fuzzyLabel['F'] = fuzz.gaussmf(fuzzyLabel.universe, 4, sigma)
+    fuzzyLabel['N'] = fuzz.trimf(fuzzyLabel.universe, [0, 0, 2])
+    fuzzyLabel['M'] = fuzz.trimf(fuzzyLabel.universe, [0, 2, 4])
+    fuzzyLabel['F'] = fuzz.trimf(fuzzyLabel.universe, [2, 4, 4])
 
     return fuzzyLabel
 
 def orientationDesfuzzification(orientationLabel):
-    fuzzyLabel = ctrl.Consequent(np.arange(-np.pi, np.pi+0.01, 0.01), orientationLabel)
+    fuzzyLabel = ctrl.Consequent(np.arange(-np.pi, np.pi+0.1, 0.1), orientationLabel)
 
-    for i, label in enumerate(['SOn', 'SE', 'ES', 'NE', 'NO', 'NW', 'WE', 'SW', 'SOp']):
-        fuzzyLabel[label] = fuzz.gaussmf(fuzzyLabel.universe, -np.pi + i*np.pi/4, 0.33)
+    fuzzyLabel['SOn'] = fuzz.trimf(fuzzyLabel.universe, [-np.pi+0*np.pi/4, -np.pi+0*np.pi/4, -np.pi+1*np.pi/4])
+    fuzzyLabel['SE']  = fuzz.trimf(fuzzyLabel.universe, [-np.pi+0*np.pi/4, -np.pi+1*np.pi/4, -np.pi+2*np.pi/4])
+    fuzzyLabel['ES']  = fuzz.trimf(fuzzyLabel.universe, [-np.pi+1*np.pi/4, -np.pi+2*np.pi/4, -np.pi+3*np.pi/4])
+    fuzzyLabel['NE']  = fuzz.trimf(fuzzyLabel.universe, [-np.pi+2*np.pi/4, -np.pi+3*np.pi/4, -np.pi+4*np.pi/4])
+    fuzzyLabel['NO']  = fuzz.trimf(fuzzyLabel.universe, [-np.pi+3*np.pi/4, -np.pi+4*np.pi/4, -np.pi+5*np.pi/4])
+    fuzzyLabel['NW']  = fuzz.trimf(fuzzyLabel.universe, [-np.pi+4*np.pi/4, -np.pi+5*np.pi/4, -np.pi+6*np.pi/4])
+    fuzzyLabel['WE']  = fuzz.trimf(fuzzyLabel.universe, [-np.pi+5*np.pi/4, -np.pi+6*np.pi/4, -np.pi+7*np.pi/4])
+    fuzzyLabel['SW']  = fuzz.trimf(fuzzyLabel.universe, [-np.pi+6*np.pi/4, -np.pi+7*np.pi/4, -np.pi+8*np.pi/4])
+    fuzzyLabel['SOp'] = fuzz.trimf(fuzzyLabel.universe, [-np.pi+7*np.pi/4, -np.pi+8*np.pi/4, -np.pi+8*np.pi/4])
 
     return fuzzyLabel

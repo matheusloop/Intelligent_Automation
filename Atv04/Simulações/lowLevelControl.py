@@ -7,7 +7,7 @@ L = 381e-3   # distância entre rodas (m)
 #gamma = 0.328
 #kappa = 1.08
 gamma = 0.3
-kappa = 2.2
+kappa = 1
 
 def lowLevelController(e, alpha):
     global gamma, kappa

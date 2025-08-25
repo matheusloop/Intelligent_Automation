@@ -28,23 +28,18 @@ try:
         if stopCondition(e): break
 
         # leituras dos sensores ultrassônicos
-        grouped_sensors = groupSensors(sim, usensors, np.pi/4)
+        groupped_sensors = groupSensors(sim, usensors, np.pi/4)
         
         #for k, v in grouped_sensors.items():
         #    print(f"{k}={v:.2f}", end=" | ")
         # controlador Lyapunov
 
 
-        e_gs, alpha_gs = goalSeeking(e, alpha)
-        e_ao, alpha_ao = obstacleAvoidance(grouped_sensors, alpha)
-        oa = False
-        if (grouped_sensors['NW'] < 1 or grouped_sensors['NO'] < 1 or grouped_sensors['NE'] < 1):
-           e, alpha = e_ao, alpha_ao
-           oa = True
-        else:
-            e, alpha = e_gs, alpha_gs
-            oa = False
+        #e_gs, alpha_gs = goalSeeking(e, alpha)
 
+        e, alpha = obstacleAvoidance(groupped_sensors, alpha)
+
+        print(f'e = {e:.2f} | alpha = {180*alpha/np.pi:.2f}')
         #print(f'e={e:.2f}, alpha={180*alpha/np.pi:.2f}, oa={oa}')
         v, w = lowLevelController(e, alpha)
         # converter para velocidades de roda

@@ -16,7 +16,47 @@ def obstacleAvoidance(groupped_sensors, alpha):
 
     rules = []
 
-    rules.append(ctrl.Rule(WE_input['N'] & ES_input['N'] & alpha_input['NO'],  e_output['N']))
+    rules.append(ctrl.Rule(NO_input['F'],      e_output['F']))
+    rules.append(ctrl.Rule(NO_input['F'], alpha_output['NO']))
+
+    rules.append(ctrl.Rule(NO_input['M'],      e_output['M']))
+    rules.append(ctrl.Rule(NO_input['M'], alpha_output['NO']))
+
+    rules.append(ctrl.Rule(NO_input['N'],      e_output['N']))
+    rules.append(ctrl.Rule(NO_input['N'], alpha_output['NO']))
+
+    rules.append(ctrl.Rule(NO_input['N'] & (NE_input['M'] | NE_input['N']),      e_output['N']))
+    rules.append(ctrl.Rule(NO_input['N'] & (NE_input['M'] | NE_input['N']), alpha_output['WE']))
+
+    rules.append(ctrl.Rule(NO_input['N'] & (NW_input['M'] | NW_input['N']),      e_output['N']))
+    rules.append(ctrl.Rule(NO_input['N'] & (NW_input['M'] | NW_input['N']), alpha_output['ES']))
+
+    rules.append(ctrl.Rule(NO_input['N'] & (ES_input['M'] | ES_input['N']),      e_output['N']))
+    rules.append(ctrl.Rule(NO_input['N'] & (ES_input['M'] | ES_input['N']), alpha_output['WE']))
+
+    rules.append(ctrl.Rule(NO_input['N'] & (WE_input['M'] | WE_input['N']),      e_output['N']))
+    rules.append(ctrl.Rule(NO_input['N'] & (WE_input['M'] | WE_input['N']), alpha_output['ES']))
+
+    system = ctrl.ControlSystem(rules)
+    simulation = ctrl.ControlSystemSimulation(system)
+
+    simulation.input['WE_input']    = groupped_sensors['WE']
+    simulation.input['NW_input']    = groupped_sensors['NW']
+    simulation.input['NO_input']    = groupped_sensors['NO']
+    simulation.input['NE_input']    = groupped_sensors['NE']
+    simulation.input['ES_input']    = groupped_sensors['ES']
+    #simulation.input['alpha_input'] = alpha
+
+    simulation.compute()
+
+    return simulation.output['e_output'], simulation.output['alpha_output']
+
+
+
+
+
+'''
+rules.append(ctrl.Rule(WE_input['N'] & ES_input['N'] & alpha_input['NO'],  e_output['N']))
     rules.append(ctrl.Rule(WE_input['N'] & ES_input['N'] & alpha_input['NO'],  e_output['F']))
 
     #Case 1
@@ -126,17 +166,4 @@ def obstacleAvoidance(groupped_sensors, alpha):
     #Case 27
     rules.append(ctrl.Rule(NW_input['F'] & NO_input['F'] & NE_input['F'],      e_output['F']))
     rules.append(ctrl.Rule(NW_input['F'] & NO_input['F'] & NE_input['F'], alpha_output['NO']))
-
-    system = ctrl.ControlSystem(rules)
-    simulation = ctrl.ControlSystemSimulation(system)
-
-    simulation.input['WE_input']    = groupped_sensors['WE']
-    simulation.input['NW_input']    = groupped_sensors['NW']
-    simulation.input['NO_input']    = groupped_sensors['NO']
-    simulation.input['NE_input']    = groupped_sensors['NE']
-    simulation.input['ES_input']    = groupped_sensors['ES']
-    simulation.input['alpha_input'] = alpha
-
-    simulation.compute()
-
-    return simulation.output['e_output'], simulation.output['alpha_output']
+'''
