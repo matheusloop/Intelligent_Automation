@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from wallPlot import drawWall
+from robotPlot import drawRobot, plotRobot
 
 import timeit
 
@@ -12,7 +13,7 @@ import timeit
 
 print('Starting simpleTest.py ...')
 
-client = RemoteAPIClient()
+client = RemoteAPIClient(port=23001)
 sim = client.getObject('sim')
 
 # When simulation is not running, ZMQ message handling could be a bit
@@ -50,6 +51,9 @@ t = []
 
 # Posição do robô
 x, y, theta = [], [], []
+
+# Posição do Sub Goal 
+x_sg, y_sg = [], []
 
 # Grandezas de erro
 e, alpha = [], []
@@ -89,6 +93,9 @@ while (sim.getSimulationState() != sim.simulation_stopped):
         e_sg.append(sim.getFloatSignal('e_sg'))
         alpha_sg.append(sim.getFloatSignal('alpha_sg'))
 
+        x_sg.append(sim.getFloatSignal('x_sg'))
+        y_sg.append(sim.getFloatSignal('y_sg'))
+
         v.append(sim.getFloatSignal('v'))
         w.append(sim.getFloatSignal('omega'))
 
@@ -103,21 +110,36 @@ x = np.array(x)
 y = np.array(y)
 e_sg = np.array(e_sg)
 alpha_sg = np.array(alpha_sg)
+e = np.array(e)
+alpha = np.array(alpha)
 
-
+plt.figure(figsize=(6, 6))
 for wall in walls:
     drawWall(wall)
-plt.plot(x, y)
-plt.plot(x + e_sg * np.cos(alpha_sg), y + e_sg * np.sin(alpha_sg), 'ro')
-plt.xlabel('X Position')
-plt.ylabel('Y Position')
-plt.title('Robot Path')
+plt.plot(x[:-1], y[:-1], linewidth=3)
+plotRobot(x, y, theta, 0.05, 'orange', 5)
+plt.plot(x[0], y[0], 'go')
+plt.plot(xg, yg, 'ro')
+plt.xlabel('x [m]')
+plt.ylabel('y [m]')
+plt.grid()
+plt.xlim(-2.5, 2.5)
+plt.ylim(-2.5, 2.5)
+plt.show()
+
+plt.figure(figsize=(8, 6))
+plt.plot(t, e, linewidth=3)
+plt.xlabel('Tempo [s]')
+plt.ylabel('Erro de posição [m]')
 plt.grid()
 plt.show()
 
-#Concatenando os vetores em um dataframe
-#data = np.array([t, x, y, theta, e, alpha, e_sg, alpha_sg, v, w, xg, yg, walls]).T
-#data = pd.DataFrame(data, columns=['t', 'x', 'y', 'phi', 'xg', 'yg', 'e', 'theta', 'alpha', 'v', 'w'])
-#data.to_csv('Data_Cena_4_Aicardi.csv', index=False)
+plt.figure(figsize=(8, 6))
+plt.plot(t, (180/np.pi) * alpha, linewidth=3)
+plt.xlabel('Tempo [s]')
+plt.ylabel('Erro de orientação [°]')
+plt.grid()
+plt.show()
+
 
 print('Simulation Ended!')
